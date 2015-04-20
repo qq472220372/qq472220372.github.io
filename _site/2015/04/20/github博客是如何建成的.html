@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="qq472220372.GitHub.io : blog">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="../../../stylesheets/stylesheet.css">
+
+    <title>github博客是如何建成的</title>
+  </head>
+<body>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <h2 id="project_tagline">PHY的博客 >> <a href="http://qq472220372.github.io">首页</a> >> <a herf="">github博客是如何建成的</a></h2>
+
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+
+
+　　<h3>
+安装centos
+</h3>
+<p>
+CentOS（Community Enterprise Operating System，中文意思是：社区企业操作系统）是Linux发行版之一，它是来自于Red Hat Enterprise Linux依照开放源代码规定释出的源代码所编译而成。由于出自同样的源代码，因此有些要求高度稳定性的服务器以CentOS替代商业版的Red Hat Enterprise Linux使用。两者的不同，在于CentOS并不包含封闭源代码软件。
+</p>
+<p><img src="../../../pic/pic2015042002.jpg" alt="" title="" /></p>
+<p>
+可以到<a herf="http://www.centos.org/">Centos官网</a>
+下载最新版本
+</p>
+
+<h3>
+安装和使用git
+</h3>
+<p>
+在github网站上搭建blog,我们既拥有绝对管理权，又享受github带来的便利----不管何时何地，只要向主机提交commit，就能发布新文章。更妙的是，这一切还是免费的，github提供无限流量，世界各地都有理想的访问速度。
+</p>
+<p><img src="../../../pic/pic2015042001.jpg" alt="" title="" /></p>
+<p>详细的git命令教程可以参见<a herf="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000" target="_Blank">廖雪峰git教程</a></p>
+<p>我们使用下面git命令来复制一个github的repository到本机
+<pre>
+<code>
+$ git clone https://github.com/username/username.github.io 
+</code>
+</pre>
+<h3>
+安装和使用jekyll
+</h3>
+<p>
+Jekyll是一个静态站点生成器，它会根据网页源码生成静态文件。它提供了模板、变量、插件等功能，所以实际上可以用来编写整个网站。先在本地编写符合Jekyll规范的网站源码，然后上传到github，由github生成并托管整个网站。
+</p>
+<p>
+当然，我们先要在本地安装Jekyll，测试运行情况，再更新到github
+</p>
+<p>
+1.安装ruby环境
+</p>
+<pre>
+<code>
+https://www.ruby-lang.org/en/downloads/
+</code>
+</pre>
+<p>
+安装完成后使用下面命令可以看到ruby版本
+</p>
+<pre>
+<code>
+$ ruby --version
+</code>
+</pre>
+
+<p>
+2.安装bundle
+</p>
+<pre>
+<code>
+gem install bundler
+</code>
+</pre>
+
+<p>
+3.在git工程下创建一个名为Gemfile的文件在里面写入如下内容：
+</p>
+<pre>
+<code>
+source 'https://rubygems.org'
+gem 'github-pages'
+</code>
+</pre>
+<p>
+最后在git目录下运行jekyll
+</p>
+<pre>
+<code>
+$ bundle exec jekyll serve
+</code>
+</pre>
+<h3>
+生成博客页面
+</h3>
+
+
+
+</section>
+</div>
+
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+</body>
+</html>
