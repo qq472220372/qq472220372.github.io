@@ -1,0 +1,76 @@
+---
+layout: default
+---
+<h3>Jekyll是如何运行的</h3>
+
+<p><img alt="Jekyll Logo" src="http://jekyllrb.com/img/logo-2x.png" /></p>
+
+<p>要使用jekyll生成博客首先要了解他的原理。一个简单的jekyll网站包括了以下目录:</p>
+
+<pre>
+<code>　　/jekyll<br />
+　　　　|--　_config.yml<br />
+　　　　|--　_layouts<br />
+　　　　|　　　|--　default.html&nbsp;<br />
+　　　　|--　_posts<br />
+　　　　|　　　|--　2015-04-21-hello-world.html<br />
+　　　　|--　index.html
+</code>
+</pre>
+
+<h3>如何配置Jekyll</h3>
+
+<p>1. _config.yml是配置文件，配置了你的网站地址等信息，如果你的博客部署在master可以这样写：</p>
+
+<pre>
+<code>
+baseurl: /
+</code>
+</pre>
+<p>如果部署在gh-pages可以在后面加上github的responstory的名字</p>
+
+<p>2.在_layout文件夹下,有一个模板文件default.html,用来配置每篇文章的通用模板，比如我的网站模板是这样的：</p>
+
+<pre>
+<code>
+&lt;!DOCTYPE html&gt;<br />
+&lt;html&gt;<br />
+&nbsp; &lt;head&gt;<br />
+&nbsp; &nbsp; &lt;meta charset=&#39;utf-8&#39;&gt;<br />
+&nbsp; &nbsp; &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;chrome=1&quot;&gt;<br />
+&nbsp; &nbsp; &lt;meta name=&quot;description&quot; content=&quot;qq472220372.GitHub.io : blog&quot;&gt;
+
+<p>&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; media=&quot;screen&quot; href=&quot;../../../stylesheets/stylesheet.css&quot;&gt;<br />
+&nbsp; &nbsp; &lt;title&gt;{{page.title}}&lt;/title&gt;<br />
+&nbsp; &lt;/head&gt;<br />
+&lt;body&gt;</p>
+
+<p>/{/{content/}/}</br>
+
+&lt;/body&gt;</br>
+
+&lt;/html&gt;</p>
+</code>
+</pre>
+
+
+<p>其中content是以后要填充的博客内容，每篇文章网页的头是相同的。</p>
+
+<p>3._post目录就是你发表的文章目录了，他的命名是有规范的，一般规则是：</p>
+
+<pre>
+<code>
+20xx-xx-xx-pagename.html
+</code>
+</pre>
+
+
+<p>前面是年月日，后面是文件名（文章的标题）</p>
+
+<p>4.最后就是主页index.html了,这部分可以自己diy</p>
+
+<h3>如何快速编辑html发布</h3>
+
+<p>可以使用在线的html生成工具比如ekeditor、kinkeditor等，在我的博客资源栏目中，有一个ekeditor在线编辑工具，可以
+<a href="../../../editor.html">试试</a>:)</p>
+
