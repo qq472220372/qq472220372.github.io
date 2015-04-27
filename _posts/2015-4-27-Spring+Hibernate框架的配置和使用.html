@@ -1,0 +1,504 @@
+---
+layout: default
+title: Spring+Hibernate框架构建后台管理系统
+---
+
+<h3>配置web.xml</h3>
+
+<p>1、启动一个WEB项目的时候，WEB容器会去读取它的配置文件web.xml，读取&lt;listener&gt;和&lt;context-param&gt;两个结点。&nbsp;</p>
+
+<p>2、紧接着，容创建一个ServletContext（servlet上下文），这个web项目的所有部分都将共享这个上下文。&nbsp;</p>
+
+<p>3、容器将&lt;context-param&gt;转换为键值对，并交给servletContext。&nbsp;</p>
+
+<p>4、容器创建&lt;listener&gt;中的类实例，创建监听器。&nbsp;</p>
+
+<p>所以首先配置：</p>
+<pre><code>
+<p>&nbsp; &nbsp; &lt;context-param&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;param-value&gt;classpath*:context.xml&lt;/param-value&gt;<br />
+&nbsp; &nbsp; &lt;/context-param&gt;<br />
+&nbsp; &nbsp; &lt;listener&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;<br />
+&nbsp; &nbsp; &lt;/listener&gt;</p>
+</code></pre>
+<p>ContextLoaderListener监听器的作用就是启动Web容器时，自动装配ApplicationContext的配置信息。因为它实现了ServletContextListener这个接口，在web.xml配置这个监听器，启动容器时，就会默认执行它实现的方法。容器会自动去读取comtext.xml这个文件。</p>
+
+<p>Spring为我们解决Hibernate的Session的关闭与开启问题。 我们要配置filter：</p>
+
+<pre><code>
+<p>&lt;!-- Hibernate Open Session In View filter--&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;filter&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;filter-name&gt;openSessionInViewFilter&lt;/filter-name&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;filter-class&gt;org.springframework.orm.hibernate4.support.OpenSessionInViewFilter&lt;/filter-class&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;/filter&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;filter-mapping&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;filter-name&gt;openSessionInViewFilter&lt;/filter-name&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;url-pattern&gt;/*&lt;/url-pattern&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;/filter-mapping&gt;</p>
+</code></pre>
+
+<p>最后我们要配置SpringServlet来拦截来自网页的Servlet请求：</p>
+<pre><code>
+
+<p>&nbsp; &nbsp; &lt;servlet&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;servlet-name&gt;springServlet&lt;/servlet-name&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;init-param&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;param-value&gt;classpath*:spring-mvc.xml&lt;/param-value&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;/init-param&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;<br />
+&nbsp; &nbsp; &lt;/servlet&gt;</p>
+</code></pre>
+
+<p>Spring会自动读取spring-mvc.xml配置文件。</p>
+
+<h3>配置spring-mvc.xml</h3>
+<pre>
+<p><img src="http://a.hiphotos.baidu.com/baike/w%3D268/sign=806fa31a4c086e066aa8384d3a097b5a/730e0cf3d7ca7bcb32b0f804be096b63f724a8d5.jpg" alt="" title="" ></p>
+</pre>
+<p>
+在这里初始化了Spring的Controller，同时定义了首页和JSP资源页面
+</p>
+<pre><code>
+
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;<br />
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;<br />
+&nbsp; &nbsp; xmlns:context=&quot;http://www.springframework.org/schema/context&quot;<br />
+&nbsp; &nbsp; xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot;<br />
+&nbsp; &nbsp; xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd<br />
+&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd<br />
+&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd&quot;&gt;</p>
+
+<p>&nbsp;&nbsp; &nbsp;&lt;!-- 自动扫描且只扫描@Controller --&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;context:component-scan base-package=&quot;com.luckytree&quot; use-default-filters=&quot;false&quot;&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;context:include-filter type=&quot;annotation&quot; expression=&quot;org.springframework.stereotype.Controller&quot;/&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;/context:component-scan&gt;</p>
+
+<p>&nbsp;&nbsp; &nbsp;&lt;mvc:annotation-driven&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;mvc:message-converters register-defaults=&quot;true&quot;&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;!-- 将StringHttpMessageConverter的默认编码设为UTF-8 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;bean class=&quot;org.springframework.http.converter.StringHttpMessageConverter&quot;&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;constructor-arg value=&quot;UTF-8&quot; /&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;/bean&gt;<br />
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;/mvc:message-converters&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;/mvc:annotation-driven&gt;</p>
+
+<p>&nbsp;&nbsp; &nbsp;&lt;!-- 容器默认的DefaultServletHandler处理 所有静态内容与无RequestMapping处理的URL--&gt;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&lt;mvc:default-servlet-handler/&gt;</p>
+
+<p>&nbsp; &nbsp; &lt;!-- 定义首页 --&gt;<br />
+&nbsp; &nbsp; &lt;mvc:view-controller path=&quot;/&quot; view-name=&quot;redirect:/login/&quot; /&gt;<br />
+&nbsp; &nbsp;&nbsp;<br />
+&nbsp; &nbsp; &lt;!-- 定义JSP --&gt;<br />
+&nbsp; &nbsp; &lt;bean class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot;&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/views/&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot; /&gt;<br />
+&nbsp; &nbsp; &lt;/bean&gt;<br />
+&nbsp; &nbsp;&nbsp;</p>
+
+<p>&nbsp; &nbsp; &lt;mvc:interceptors&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;bean class=&quot;org.springframework.web.servlet.i18n.LocaleChangeInterceptor&quot; /&gt;<br />
+&nbsp; &nbsp; &lt;/mvc:interceptors&gt;<br />
+&lt;/beans&gt;</p>
+</code></pre>
+<h3>配置applicationContext.xml</h3>
+<pre><code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;<br />
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;<br />
+&nbsp; &nbsp; &nbsp; &nbsp;xmlns:context=&quot;http://www.springframework.org/schema/context&quot;<br />
+&nbsp; &nbsp; &nbsp; &nbsp;xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot; xmlns:jpa=&quot;http://www.springframework.org/schema/data/jpa&quot;<br />
+&nbsp; &nbsp; &nbsp; &nbsp;xmlns:util=&quot;http://www.springframework.org/schema/util&quot;<br />
+&nbsp; &nbsp; &nbsp; &nbsp;xsi:schemaLocation=&quot;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd<br />
+&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd<br />
+&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd<br />
+&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd<br />
+&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd<br />
+&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &quot;&gt;</p>
+
+<p>&lt;!-- &nbsp;<br />
+&nbsp; &nbsp; &lt;bean class=&quot;org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor&quot;/&gt;<br />
+--&gt;<br />
+&lt;!-- 读取配置文件 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;context:property-placeholder ignore-unresolvable=&quot;true&quot; location=&quot;classpath*:/jdbc.properties&quot; /&gt;<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp; &nbsp; &lt;!-- 使用annotation 自动注册bean, 并保证@Required、@Autowired的属性被注入 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;context:component-scan base-package=&quot;com.luckytree&quot;&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;context:exclude-filter type=&quot;annotation&quot; expression=&quot;org.springframework.stereotype.Controller&quot; /&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;context:exclude-filter type=&quot;annotation&quot; expression=&quot;org.springframework.web.bind.annotation.ControllerAdvice&quot; /&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;/context:component-scan&gt;</p>
+
+<p>&nbsp; &nbsp; &lt;!-- 数据源配置, 使用DBCP数据库连接池 --&gt;<br />
+&nbsp; &nbsp; &lt;context:property-placeholder location=&quot;classpath:jdbc.properties&quot;/&gt;<br />
+&nbsp; &nbsp; &lt;bean id=&quot;dataSource&quot; class=&quot;com.alibaba.druid.pool.DruidDataSource&quot; &gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;driverClassName&quot; value=&quot;${jdbc.driver}&quot;/&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;filters&quot; value=&quot;mergeStat&quot; /&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;!-- 申请连接的时候检测 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;property name=&quot;testWhileIdle&quot; value=&quot;true&quot;&gt;&lt;/property&gt;&nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;!-- 检测连接 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;property name=&quot;validationQuery&quot; value=&quot;select &#39;x&#39;&quot;&gt;&lt;/property&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;!--maxActive: 最大连接数量 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;property name=&quot;maxActive&quot; value=&quot;${jdbc.maxActive}&quot; /&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;!--initialSize: 初始化连接 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;property name=&quot;initialSize&quot; value=&quot;${jdbc.maxIdle}&quot; /&gt;<br />
+&nbsp; &nbsp; &lt;/bean&gt;<br />
+&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><br />
+&nbsp;&nbsp; &nbsp;&lt;!-- 定义事务 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;bean id=&quot;transactionManager&quot; class=&quot;org.springframework.orm.hibernate4.HibernateTransactionManager&quot;&gt; &nbsp;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;sessionFactory&quot; ref=&quot;sessionFactory&quot; /&gt; &nbsp;<br />
+&nbsp; &nbsp; &lt;/bean&gt;<br />
+&nbsp; &nbsp;&nbsp;<br />
+&nbsp; &nbsp; &lt;!-- 使用annotation定义事务 --&gt;<br />
+&nbsp; &nbsp; &lt;tx:annotation-driven transaction-manager=&quot;transactionManager&quot; proxy-target-class=&quot;true&quot;/&gt;<br />
+&nbsp; &nbsp;&nbsp;<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&lt;!-- 定义Hibernate Session工厂 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;bean id=&quot;sessionFactory&quot; class=&quot;org.springframework.orm.hibernate4.LocalSessionFactoryBean&quot;&gt;&nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot;/&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;property name=&quot;namingStrategy&quot;&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;bean class=&quot;org.hibernate.cfg.ImprovedNamingStrategy&quot; /&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;/property&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;property name=&quot;hibernateProperties&quot;&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;props&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.dialect&quot;&gt;${hibernate.dialect}&lt;/prop&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.show_sql&quot;&gt;${hibernate.show_sql}&lt;/prop&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.format_sql&quot;&gt;${hibernate.format_sql}&lt;/prop&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.cache.use_second_level_cache&quot;&gt;true&lt;/prop&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.cache.use_query_cache&quot;&gt;true&lt;/prop&gt;<br />
+&nbsp; &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.cache.region.factory_class&quot;&gt;org.hibernate.cache.ehcache.EhCacheRegionFactory&lt;/prop&gt;</p>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;!-- hibernate自动更新表结构 --&gt;<br />
+&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;prop key=&quot;hibernate.hbm2ddl.auto&quot;&gt;update&lt;/prop&gt;</p>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;!-- 防止org.hibernate.LazyInitializationException异常 --&gt;<br />
+&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;prop key=&quot;hibernate.enable_lazy_load_no_trans&quot;&gt;true&lt;/prop&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;/props&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;/property&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;property name=&quot;packagesToScan&quot; value=&quot;com.luckytree&quot; /&gt;&lt;!-- 如果多个，用&ldquo;,&rdquo;分隔 --&gt;<br />
+&nbsp;&nbsp; &nbsp;&lt;/bean&gt;<br />
+&nbsp;&nbsp; &nbsp;<br />
+&lt;/beans&gt;</p>
+</code></pre>
+
+<h3>配置persistence.xml</h3>
+<pre><code>
+
+<p>&lt;?xml version=&quot;1.0&quot;?&gt;<br />
+&lt;persistence xmlns=&quot;http://java.sun.com/xml/ns/persistence&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;<br />
+&nbsp; &nbsp; xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd&quot; version=&quot;1.0&quot;&gt;<br />
+&nbsp; &nbsp; &lt;persistence-unit name=&quot;default&quot; transaction-type=&quot;RESOURCE_LOCAL&quot;&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;provider&gt;org.hibernate.ejb.HibernatePersistence&lt;/provider&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;properties&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.dialect&quot; value=&quot;org.hibernate.dialect.MySQLDialect&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.max_fetch_depth&quot; value=&quot;3&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.hbm2ddl.auto&quot; value=&quot;update&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.jdbc.fetch_size&quot; value=&quot;18&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.jdbc.batch_size&quot; value=&quot;10&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.show_sql&quot; value=&quot;false&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.format_sql&quot; value=&quot;false&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.cache.region.factory_class&quot; value=&quot;org.hibernate.cache.ehcache.EhCacheRegionFactory&quot; /&gt;</p>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;!-- 使用EJB3NamingStrategy会忽略@Column,默认使用&ldquo;大写&rdquo;转&ldquo;_+小写&rdquo;命名表属性--&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.ejb.naming_strategy&quot; value=&quot;org.hibernate.cfg.EJB3NamingStrategy&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;net.sf.ehcache.configurationResourceName&quot; value=&quot;ehcache-hibernate-local.xml&quot; /&gt;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;/properties&gt;<br />
+&nbsp; &nbsp; &lt;/persistence-unit&gt;<br />
+&lt;/persistence&gt;</p>
+</code></pre>
+
+<h3>建立实体类的关联</h3>
+
+<p>以Admin和Permission的一对多关系为例，在Admin中写的属性是：</p>
+<pre><code>
+<p>&nbsp;&nbsp; &nbsp;@JsonIgnore<br />
+&nbsp; &nbsp; private List&lt;Permission&gt; permissions= new LinkedList&lt;Permission&gt;();&nbsp; &nbsp;</p>
+
+<p>&nbsp; &nbsp; //@JsonIgnore的作用是在转换Json格式时防止死循环读取</p>
+
+<p>&nbsp; &nbsp; //fetch = FetchType.EAGER表示可以集联取出permission属性<br />
+&nbsp;&nbsp; &nbsp;@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER , mappedBy = &quot;admin&quot;)<br />
+&nbsp;&nbsp; &nbsp;public List&lt;Permission&gt; getPermissions() {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return permissions;<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;public void setPermissions(List&lt;Permission&gt; permissions) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;this.permissions = permissions;<br />
+&nbsp;&nbsp; &nbsp;}</p>
+</code></pre>
+
+<p>在Permission中写的属性是：</p>
+<pre><code>
+
+<p>&nbsp;&nbsp; &nbsp;@JsonIgnore<br />
+&nbsp; &nbsp; private Admin admin;</p>
+
+<p>&nbsp; &nbsp; //fetch = FetchType.LAZY表示操作时不关联admin</p>
+
+<p>&nbsp; &nbsp;//&quot;Admin_Account&quot;表示关联admin表的主键Account（Hibernate默认关联主键）</p>
+
+<p>&nbsp;&nbsp; &nbsp;@ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)<br />
+&nbsp;&nbsp; &nbsp;@JoinColumn(name = &quot;Admin_Account&quot;,nullable = false)<br />
+&nbsp;&nbsp; &nbsp;public Admin getAdmin() {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return admin;<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;public void setAdmin(Admin admin) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;this.admin = admin;<br />
+&nbsp;&nbsp; &nbsp;}</p>
+</code></pre>
+
+<h3>构建Dao层</h3>
+
+<p>Hibernate使用SessionFectory来操作实体类:</p>
+<pre><code>
+
+<p>&nbsp;&nbsp; &nbsp;@Autowired<br />
+&nbsp;&nbsp; &nbsp;protected SessionFactory sessionFactory;</p>
+
+<p>/**<br />
+&nbsp;&nbsp; &nbsp; * 取得当前Session.<br />
+&nbsp;&nbsp; &nbsp; * @return Session<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public Session getSession() {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return sessionFactory.getCurrentSession();<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 保存新增或修改的对象.<br />
+&nbsp;&nbsp; &nbsp; * @param entity<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public void save(final T entity) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;getSession().saveOrUpdate(entity);<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 删除对象.<br />
+&nbsp;&nbsp; &nbsp; * @param entity 对象必须是session中的对象或含id属性的transient对象.<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public void delete(final T entity) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;getSession().delete(entity);<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 按id删除对象.<br />
+&nbsp;&nbsp; &nbsp; * @param id<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public void delete(final PK id) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;delete(find(id));<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 按id获取对象.<br />
+&nbsp;&nbsp; &nbsp; * @param id<br />
+&nbsp;&nbsp; &nbsp; * @return 对象<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public T find(final PK id) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return (T) getSession().load(entityClass, id);<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 按id列表获取对象列表.<br />
+&nbsp;&nbsp; &nbsp; * @param idList<br />
+&nbsp;&nbsp; &nbsp; * @return 对象集合<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public List&lt;T&gt; find(final Collection&lt;PK&gt; idList) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return find(Restrictions.in(getIdName(), idList));<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 获取全部对象.<br />
+&nbsp;&nbsp; &nbsp; * @return 对象集合.<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public List&lt;T&gt; findAll() {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return find();<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 获取全部对象.<br />
+&nbsp;&nbsp; &nbsp; * @param isCache 是否缓存<br />
+&nbsp;&nbsp; &nbsp; * @return 对象集合.<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public List&lt;T&gt; findAll(Boolean isCache) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return find(isCache);<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 获取全部对象, 支持按属性行序.<br />
+&nbsp;&nbsp; &nbsp; * @param orderByProperty 排序属性name<br />
+&nbsp;&nbsp; &nbsp; * @param isAsc 是否升序排序<br />
+&nbsp;&nbsp; &nbsp; * @return 查询结果集合<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public List&lt;T&gt; findAll(String orderByProperty, boolean isAsc) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Criteria c = createCriteria();<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;if (isAsc) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;c.addOrder(Order.asc(orderByProperty));<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;} else {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;c.addOrder(Order.desc(orderByProperty));<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return c.list();<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 按属性查找对象列表, 匹配方式为相等<br />
+&nbsp;&nbsp; &nbsp; * @param propertyName 属性name<br />
+&nbsp;&nbsp; &nbsp; * @param value 属性值<br />
+&nbsp;&nbsp; &nbsp; * @return 结果集合<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public List&lt;T&gt; findBy(final String propertyName, final Object value) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Criterion criterion = Restrictions.eq(propertyName, value);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return find(criterion);<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 按属性查找唯一对象, 匹配方式为相等<br />
+&nbsp;&nbsp; &nbsp; * @param propertyName 属性name<br />
+&nbsp;&nbsp; &nbsp; * @param value 属性值<br />
+&nbsp;&nbsp; &nbsp; * @return 结果对象<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public T findUniqueBy(final String propertyName, final Object value) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Criterion criterion = Restrictions.eq(propertyName, value);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return (T) createCriteria(criterion).uniqueResult();<br />
+&nbsp;&nbsp; &nbsp;}</p>
+</code></pre>
+
+<p>可以利用Java的反射，构建一个通用的Dao层，方便实体类的调用，要使用时只需继承即可，不用写任何操作：</p>
+<pre><code>
+
+<p>@Repository<br />
+public class UserDao extends HibernateDao&lt;User, String&gt;{</p>
+
+<p>}</p>
+</code></pre>
+
+<h3>构建Service层</h3>
+
+<p>Service层主要用来处理业务逻辑，获得实体类的数据并组装传送给页面，我们也可以写一个通用的BaseService减少代码的冗余：</p>
+<pre><code>
+
+<p>public abstract class BaseService&lt;T,PK extends Serializable &gt; {<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp; * 子类需要实现该方法，提供注入的dao<br />
+&nbsp;&nbsp; &nbsp; * @return<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;public abstract HibernateDao&lt;T, PK&gt; getEntityDao();<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;@Transactional(readOnly = true)<br />
+&nbsp;&nbsp; &nbsp;public T get(final PK id) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return getEntityDao().find(id);<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>&nbsp;&nbsp; &nbsp;@Transactional(readOnly = false)<br />
+&nbsp;&nbsp; &nbsp;public void save(final T entity) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;getEntityDao().save(entity);<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;@Transactional(readOnly = false)<br />
+&nbsp;&nbsp; &nbsp;public void update(final T entity){<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;getEntityDao().save(entity);<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;@Transactional(readOnly = false)<br />
+&nbsp;&nbsp; &nbsp;public void delete(final T entity){<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;getEntityDao().delete(entity);<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;@Transactional(readOnly = false)<br />
+&nbsp;&nbsp; &nbsp;public void delete(final PK id){<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;getEntityDao().delete(id);<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;@Transactional(readOnly = true)<br />
+&nbsp;&nbsp; &nbsp;public List&lt;T&gt; getAll(){<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return getEntityDao().findAll();<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;@Transactional(readOnly = true)<br />
+&nbsp;&nbsp; &nbsp;public List&lt;T&gt; getAll(Boolean isCache){<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return getEntityDao().findAll(isCache);<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;public List&lt;T&gt; search(final List&lt;PropertyFilter&gt; filters){<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return getEntityDao().find(filters);<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;@Transactional(readOnly = true)<br />
+&nbsp;&nbsp; &nbsp;public Page&lt;T&gt; search(final Page&lt;T&gt; page, final List&lt;PropertyFilter&gt; filters) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return getEntityDao().findPage(page, filters);<br />
+&nbsp;&nbsp; &nbsp;}</p>
+
+<p>}</p>
+</code></pre>
+
+<h3>构建Controller层</h3>
+
+<p>在Controller层，接收页面传送的数据并作简单的判断，调用Service进行处理，并返回也便所需要的结果：</p>
+<pre><code>
+
+<p>@Controller<br />
+public class MainController extends BaseController{</p>
+
+<p>&nbsp; &nbsp; @Autowired<br />
+&nbsp; &nbsp; private PermissionService permissionService;<br />
+&nbsp; &nbsp; @Autowired<br />
+&nbsp; &nbsp; private UserService userService;<br />
+&nbsp; &nbsp; @Autowired<br />
+&nbsp; &nbsp; private CommodityService commodityService;</p>
+
+<p><br />
+&nbsp; &nbsp; @RequestMapping(value = &quot;/system/permission/i/json&quot;, method = RequestMethod.GET)<br />
+&nbsp; &nbsp; @ResponseBody<br />
+&nbsp; &nbsp; public List&lt;Permission&gt; jtyjson(HttpSession session) {<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;Admin admin = null;<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;admin = (Admin) session.getAttribute(&quot;user&quot;);<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;//Set&lt;Permission&gt; permissionSet = user.getPermissions();<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;if(admin!=null){<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;List&lt;Permission&gt; permssionList = null;<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;permssionList = admin.getPermissions();<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;//permssionList.addAll(permissionSet);<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;return permssionList;<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;}<br />
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;else return null;<br />
+&nbsp; &nbsp; }<br />
+&nbsp; &nbsp;&nbsp;<br />
+&nbsp;&nbsp; &nbsp;@RequestMapping(value=&quot;system/user/json&quot;,method = RequestMethod.GET)<br />
+&nbsp;&nbsp; &nbsp;@ResponseBody<br />
+&nbsp;&nbsp; &nbsp;public Map&lt;String, Object&gt; getData(HttpServletRequest request) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Page&lt;User&gt; page = getPage(request);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;List&lt;PropertyFilter&gt; filters = PropertyFilter.buildFromHttpRequest(request);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;page = userService.search(page, filters);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return getEasyUIData(page);<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;@RequestMapping(value=&quot;shop/commodity/json&quot;,method = RequestMethod.GET)<br />
+&nbsp;&nbsp; &nbsp;@ResponseBody<br />
+&nbsp;&nbsp; &nbsp;public Map&lt;String, Object&gt; getShopData(HttpServletRequest request) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Page&lt;Commodity&gt; page = getPage(request);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;List&lt;PropertyFilter&gt; filters = PropertyFilter.buildFromHttpRequest(request);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;page = commodityService.search(page, filters);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return getEasyUIData(page);<br />
+&nbsp;&nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;<br />
+}</p>
+</code></pre>
+
+<h3>总结</h3>
+
+<p>使用Hibernate+Spring的关键是要有一个清晰的思路，一般的项目是从构建实体类开始的，也就是设计数据库，然后设计页面所需要的展现数据，通过使用Spring框架，发现自己的编程逻辑还是比较混乱，写代码之前应该进总体的的设计。</p>
+
+<p>&nbsp;</p>
+
