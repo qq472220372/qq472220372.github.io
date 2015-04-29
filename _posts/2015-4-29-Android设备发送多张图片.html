@@ -1,0 +1,127 @@
+---
+layout: default
+title: 使用Socket在Android设备间发送多张图片
+---
+<h3>创建一个发送照片服务类FileTransferService</h3>
+
+<p>&nbsp; &nbsp; 这个服务类继承自IntentService。</p>
+
+<p>&nbsp; &nbsp; 不知道大家有没有和我一样，以前做项目或者练习的时候一直都是用Service来处理后台耗时操作，却很少注意到还有个IntentService，前段时间准备面试的时候看到了一篇关于IntentService的解释，发现了它相对于Service来说有很多更加方便之处，今天在这里稍微来总结下我的心得。</p>
+
+<p>首先IntentService是继承自Service的，那我们先看看Service的官方介绍，这里列出两点比较重要的地方：</p>
+<pre><code>
+<p><span style="line-height:1.6">1.A Service is not a separate process. The Service object itself does not imply it is running in its own process; unless otherwise specified, it runs in the same process as the application it is part of.</span></p>
+
+<p>2.A Service is not a thread. It is not a means itself to do work off of the main thread (to avoid Application Not Responding errors).</p>
+</code></pre>
+<p>稍微翻一下(英文水平一般)</p>
+
+<p>1.Service不是一个单独的进程 ，它和应用程序在同一个进程中。</p>
+
+<p>2.Service不是一个线程，所以我们应该避免在Service里面进行耗时的操作</p>
+
+<p>关于第二点我想说下，不知道很多网上的文章都把耗时的操作直接放在Service的onStart方法中，而且没有强调这样会出现Application Not Responding！希望我的文章能帮大家认清这个误区(Service不是一个线程，不能直接处理耗时的操作)。</p>
+
+<p>有人肯定会问，那么为什么我不直接用Thread而要用Service呢？关于这个，大家可以网上搜搜，这里不过多解释。有一点需要强调，如果有耗时操作在Service里，就必须开启一个单独的线程来处理！！！这点一定要铭记在心。</p>
+
+<p>IntentService相对于Service来说，有几个非常有用的优点，首先我们看看官方文档的说明：</p>
+<pre><code>
+
+<p>IntentService is a base class for Services that handle asynchronous requests (expressed as Intents) on demand. Clients send requests throughstartService(Intent) calls; the service is started as needed, handles each Intent in turn using a worker thread, and stops itself when it runs out of work.</p>
+
+<p>This &quot;work queue processor&quot; pattern is commonly used to offload tasks from an application&#39;s main thread. The IntentService class exists to simplify this pattern and take care of the mechanics. To use it, extend IntentService and implement onHandleIntent(Intent). IntentService will receive the Intents, launch a worker thread, and stop the service as appropriate.</p>
+
+<p>All requests are handled on a single worker thread -- they may take as long as necessary (and will not block the application&#39;s main loop), but only one request will be processed at a time.</p>
+</code></pre>
+<p>e使用队列的方式将请求的Intent加入队列，然后开启一个worker thread(线程)来处理队列中的Intent，对于异步的startService请求，IntentService会处理完成一个之后再处理第二个，每一个请求都会在一个单独的worker thread中处理，不会阻塞应用程序的主线程，这里就给我们提供了一个思路，如果有耗时的操作与其在Service里面开启新线程还不如使用IntentService来处理耗时操作。</p>
+<pre><code>
+<p>&nbsp;@Override<br />
+&nbsp; &nbsp; protected void onHandleIntent(final Intent intent) {</p>
+
+<p>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Context context = getApplicationContext();<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (intent.getAction().equals(ACTION_SEND_FILE)) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;String[] fileUris = intent.getStringArrayExtra(&quot;imgUris&quot;);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;String host = intent.getExtras().getString(EXTRAS_GROUP_OWNER_ADDRESS);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int port = intent.getExtras().getInt(EXTRAS_GROUP_OWNER_PORT);</p>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; //为每张照片建立一个Socket连接，发送完后将其关闭<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for(int i=0;i&lt;fileUris.length;i++){<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Socket socket = new Socket();<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; try {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Log.d(WiFiDirectActivity.TAG, &quot;Opening client socket - &quot;);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;socket.bind(null);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;socket.connect((new InetSocketAddress(host, port)), SOCKET_TIMEOUT);</p>
+
+<p>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Log.d(WiFiDirectActivity.TAG, &quot;Client socket - &quot; + socket.isConnected());<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;OutputStream stream = socket.getOutputStream();<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ContentResolver cr = context.getContentResolver();<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;InputStream is = null;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;is = cr.openInputStream(Uri.parse(&quot;file://&quot;+fileUris[i]));<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;} catch (FileNotFoundException e) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Log.d(WiFiDirectActivity.TAG, e.toString());<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;DeviceDetailFragment.copyFile(is, stream);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Log.d(WiFiDirectActivity.TAG, &quot;Client: Data written&quot;);<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;} catch (IOException e) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Log.e(WiFiDirectActivity.TAG, e.getMessage());<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;} finally {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (socket != null) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (socket.isConnected()) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;socket.close();<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;} catch (IOException e) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// Give up<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e.printStackTrace();<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;}<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;}<br />
+&nbsp; &nbsp; }<br />
+&nbsp; &nbsp; }</p>
+</code></pre>
+<h3>在服务端启动一个Socket</h3>
+<pre><code>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ServerSocket serverSocket = new ServerSocket(port);<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Log.d(WiFiDirectActivity.TAG, &quot;Server: Socket opened&quot;);<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; while(true){</p>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; //使服务端持续接收客户端发送的数据<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Socket client = serverSocket.accept();</p>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; //每接收到一次数据，为其开辟一个线程来处理<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; new Thread(new Task(client,context,statusText)).start();</p>
+</code></pre>
+<h3>创建一个继承自Runnable的Task类</h3>
+<pre><code>
+<p>public void run() { &nbsp;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;try{<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Log.d(WiFiDirectActivity.TAG, &quot;Server: connection done&quot;);<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; final File f = new File(Environment.getExternalStorageDirectory() + &quot;/&quot;<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; + context.getPackageName() + &quot;/wifip2pshared-&quot; + System.currentTimeMillis()<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; + &quot;.jpg&quot;);</p>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; File dirs = new File(f.getParent());<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (!dirs.exists())<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dirs.mkdirs();<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; f.createNewFile();</p>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Log.d(WiFiDirectActivity.TAG, &quot;server: copying files &quot; + f.toString());<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; InputStream inputstream = socket.getInputStream();<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; copyFile(inputstream, new FileOutputStream(f));<br />
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;//发送msg给Handler更新主界面显示受到的照片<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Message msg = new Message();<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Bundle data = new Bundle();<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; data.putString(&quot;Uri&quot;, &quot;file://&quot;+f.getAbsolutePath());<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; msg.setData(data);<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; myHandler.sendMessage(msg);</p>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; //发送完照片后关闭这个连接<br />
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;socket.close();<br />
+&nbsp; &nbsp; &nbsp; &nbsp; }catch (IOException e) {<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Log.e(WiFiDirectActivity.TAG, e.getMessage());<br />
+&nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp; &nbsp; &nbsp; &nbsp; }</p>
+</code></pre>

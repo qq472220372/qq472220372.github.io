@@ -22,7 +22,7 @@
       <section id="main_content" class="inner">
 
 
-　　<h3>配置web.xml</h3>
+　　<h3>一.配置web.xml</h3>
 
 <p>1、启动一个WEB项目的时候，WEB容器会去读取它的配置文件web.xml，读取&lt;listener&gt;和&lt;context-param&gt;两个结点。&nbsp;</p>
 
@@ -74,22 +74,15 @@
 
 <p>Spring会自动读取spring-mvc.xml配置文件。</p>
 
-<h3>配置spring-mvc.xml</h3>
+<h3>二.配置spring-mvc.xml</h3>
 <pre>
-<p><img src="http://a.hiphotos.baidu.com/baike/w%3D268/sign=806fa31a4c086e066aa8384d3a097b5a/730e0cf3d7ca7bcb32b0f804be096b63f724a8d5.jpg" alt="" title="" ></p>
+<p><img src="http://images.51cto.com/files/uploadimg/20100706/135758320.jpg" alt="" title="" ></p>
 </pre>
 <p>
 在这里初始化了Spring的Controller，同时定义了首页和JSP资源页面
 </p>
 <pre><code>
 
-<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;<br />
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;<br />
-&nbsp; &nbsp; xmlns:context=&quot;http://www.springframework.org/schema/context&quot;<br />
-&nbsp; &nbsp; xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot;<br />
-&nbsp; &nbsp; xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd<br />
-&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd<br />
-&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd&quot;&gt;</p>
 
 <p>&nbsp;&nbsp; &nbsp;&lt;!-- 自动扫描且只扫描@Controller --&gt;<br />
 &nbsp;&nbsp; &nbsp;&lt;context:component-scan base-package=&quot;com.luckytree&quot; use-default-filters=&quot;false&quot;&gt;<br />
@@ -123,21 +116,8 @@
 &nbsp; &nbsp; &lt;/mvc:interceptors&gt;<br />
 &lt;/beans&gt;</p>
 </code></pre>
-<h3>配置applicationContext.xml</h3>
+<h3>三.配置applicationContext.xml</h3>
 <pre><code>
-<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;<br />
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;<br />
-&nbsp; &nbsp; &nbsp; &nbsp;xmlns:context=&quot;http://www.springframework.org/schema/context&quot;<br />
-&nbsp; &nbsp; &nbsp; &nbsp;xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot; xmlns:jpa=&quot;http://www.springframework.org/schema/data/jpa&quot;<br />
-&nbsp; &nbsp; &nbsp; &nbsp;xmlns:util=&quot;http://www.springframework.org/schema/util&quot;<br />
-&nbsp; &nbsp; &nbsp; &nbsp;xsi:schemaLocation=&quot;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd<br />
-&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd<br />
-&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd<br />
-&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd<br />
-&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd<br />
-&nbsp; &nbsp; &nbsp; &nbsp; http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &quot;&gt;</p>
 
 <p>&lt;!-- &nbsp;<br />
 &nbsp; &nbsp; &lt;bean class=&quot;org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor&quot;/&gt;<br />
@@ -195,12 +175,12 @@
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.format_sql&quot;&gt;${hibernate.format_sql}&lt;/prop&gt;<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.cache.use_second_level_cache&quot;&gt;true&lt;/prop&gt;<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.cache.use_query_cache&quot;&gt;true&lt;/prop&gt;<br />
-&nbsp; &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.cache.region.factory_class&quot;&gt;org.hibernate.cache.ehcache.EhCacheRegionFactory&lt;/prop&gt;</p>
-
-<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;!-- hibernate自动更新表结构 --&gt;<br />
-&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;prop key=&quot;hibernate.hbm2ddl.auto&quot;&gt;update&lt;/prop&gt;</p>
-
-<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;!-- 防止org.hibernate.LazyInitializationException异常 --&gt;<br />
+&nbsp; &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;prop key=&quot;hibernate.cache.region.factory_class&quot;&gt;org.hibernate.cache.ehcache.EhCacheRegionFactory&lt;/prop&gt;
+<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;!-- hibernate自动更新表结构 --&gt;<br />
+&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;prop key=&quot;hibernate.hbm2ddl.auto&quot;&gt;update&lt;/prop&gt;
+<br />
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;!-- 防止org.hibernate.LazyInitializationException异常 --&gt;<br />
 &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;prop key=&quot;hibernate.enable_lazy_load_no_trans&quot;&gt;true&lt;/prop&gt;<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;/props&gt;<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;/property&gt;<br />
@@ -210,42 +190,18 @@
 &lt;/beans&gt;</p>
 </code></pre>
 
-<h3>配置persistence.xml</h3>
-<pre><code>
 
-<p>&lt;?xml version=&quot;1.0&quot;?&gt;<br />
-&lt;persistence xmlns=&quot;http://java.sun.com/xml/ns/persistence&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;<br />
-&nbsp; &nbsp; xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd&quot; version=&quot;1.0&quot;&gt;<br />
-&nbsp; &nbsp; &lt;persistence-unit name=&quot;default&quot; transaction-type=&quot;RESOURCE_LOCAL&quot;&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &lt;provider&gt;org.hibernate.ejb.HibernatePersistence&lt;/provider&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &lt;properties&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.dialect&quot; value=&quot;org.hibernate.dialect.MySQLDialect&quot; /&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.max_fetch_depth&quot; value=&quot;3&quot; /&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.hbm2ddl.auto&quot; value=&quot;update&quot; /&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.jdbc.fetch_size&quot; value=&quot;18&quot; /&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.jdbc.batch_size&quot; value=&quot;10&quot; /&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.show_sql&quot; value=&quot;false&quot; /&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.format_sql&quot; value=&quot;false&quot; /&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.cache.region.factory_class&quot; value=&quot;org.hibernate.cache.ehcache.EhCacheRegionFactory&quot; /&gt;</p>
 
-<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;!-- 使用EJB3NamingStrategy会忽略@Column,默认使用&ldquo;大写&rdquo;转&ldquo;_+小写&rdquo;命名表属性--&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;hibernate.ejb.naming_strategy&quot; value=&quot;org.hibernate.cfg.EJB3NamingStrategy&quot; /&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;property name=&quot;net.sf.ehcache.configurationResourceName&quot; value=&quot;ehcache-hibernate-local.xml&quot; /&gt;<br />
-&nbsp; &nbsp; &nbsp; &nbsp; &lt;/properties&gt;<br />
-&nbsp; &nbsp; &lt;/persistence-unit&gt;<br />
-&lt;/persistence&gt;</p>
-</code></pre>
-
-<h3>建立实体类的关联</h3>
+<h3>四.建立实体类的关联</h3>
 
 <p>以Admin和Permission的一对多关系为例，在Admin中写的属性是：</p>
 <pre><code>
 <p>&nbsp;&nbsp; &nbsp;@JsonIgnore<br />
-&nbsp; &nbsp; private List&lt;Permission&gt; permissions= new LinkedList&lt;Permission&gt;();&nbsp; &nbsp;</p>
+&nbsp; &nbsp; private List&lt;Permission&gt; permissions= new LinkedList&lt;Permission&gt;();&nbsp; &nbsp;
 
-<p>&nbsp; &nbsp; //@JsonIgnore的作用是在转换Json格式时防止死循环读取</p>
+<br />&nbsp; &nbsp; //@JsonIgnore的作用是在转换Json格式时防止死循环读取<br />
 
-<p>&nbsp; &nbsp; //fetch = FetchType.EAGER表示可以集联取出permission属性<br />
+&nbsp; &nbsp; //fetch = FetchType.EAGER表示可以集联取出permission属性<br />
 &nbsp;&nbsp; &nbsp;@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER , mappedBy = &quot;admin&quot;)<br />
 &nbsp;&nbsp; &nbsp;public List&lt;Permission&gt; getPermissions() {<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return permissions;<br />
@@ -259,40 +215,40 @@
 <pre><code>
 
 <p>&nbsp;&nbsp; &nbsp;@JsonIgnore<br />
-&nbsp; &nbsp; private Admin admin;</p>
+&nbsp; &nbsp; private Admin admin;
 
-<p>&nbsp; &nbsp; //fetch = FetchType.LAZY表示操作时不关联admin</p>
+<br />&nbsp; &nbsp; //fetch = FetchType.LAZY表示操作时不关联admin<br />
 
-<p>&nbsp; &nbsp;//&quot;Admin_Account&quot;表示关联admin表的主键Account（Hibernate默认关联主键）</p>
+&nbsp; &nbsp;//&quot;Admin_Account&quot;表示关联admin表的主键Account（Hibernate默认关联主键）<br />
 
-<p>&nbsp;&nbsp; &nbsp;@ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)<br />
+&nbsp;&nbsp; &nbsp;@ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)<br />
 &nbsp;&nbsp; &nbsp;@JoinColumn(name = &quot;Admin_Account&quot;,nullable = false)<br />
 &nbsp;&nbsp; &nbsp;public Admin getAdmin() {<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return admin;<br />
-&nbsp;&nbsp; &nbsp;}</p>
+&nbsp;&nbsp; &nbsp;}<br />
 
-<p>&nbsp;&nbsp; &nbsp;public void setAdmin(Admin admin) {<br />
+&nbsp;&nbsp; &nbsp;public void setAdmin(Admin admin) {<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;this.admin = admin;<br />
 &nbsp;&nbsp; &nbsp;}</p>
 </code></pre>
 
-<h3>构建Dao层</h3>
+<h3>五.构建Dao层</h3>
 
 <p>Hibernate使用SessionFectory来操作实体类:</p>
 <pre><code>
 
 <p>&nbsp;&nbsp; &nbsp;@Autowired<br />
-&nbsp;&nbsp; &nbsp;protected SessionFactory sessionFactory;</p>
+&nbsp;&nbsp; &nbsp;protected SessionFactory sessionFactory;<br />
 
-<p>/**<br />
+<br />/**<br />
 &nbsp;&nbsp; &nbsp; * 取得当前Session.<br />
 &nbsp;&nbsp; &nbsp; * @return Session<br />
 &nbsp;&nbsp; &nbsp; */<br />
 &nbsp;&nbsp; &nbsp;public Session getSession() {<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return sessionFactory.getCurrentSession();<br />
-&nbsp;&nbsp; &nbsp;}</p>
+&nbsp;&nbsp; &nbsp;}<br />
 
-<p>&nbsp;&nbsp; &nbsp;/**<br />
+&nbsp;&nbsp; &nbsp;/**<br />
 &nbsp;&nbsp; &nbsp; * 保存新增或修改的对象.<br />
 &nbsp;&nbsp; &nbsp; * @param entity<br />
 &nbsp;&nbsp; &nbsp; */<br />
@@ -399,7 +355,7 @@ public class UserDao extends HibernateDao&lt;User, String&gt;{</p>
 <p>}</p>
 </code></pre>
 
-<h3>构建Service层</h3>
+<h3>六.构建Service层</h3>
 
 <p>Service层主要用来处理业务逻辑，获得实体类的数据并组装传送给页面，我们也可以写一个通用的BaseService减少代码的冗余：</p>
 <pre><code>
