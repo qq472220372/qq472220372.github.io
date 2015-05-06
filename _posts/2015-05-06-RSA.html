@@ -1,41 +1,49 @@
 ---
 layout: default
-title: RSA�����㷨
+title: RSA加密算法
 ---
-<h3>Https�е�RSA�㷨</h3>
+<h3>Https中的RSA算法</h3>
 
+<p>百度自2014年底起，开始对部分地区开放了HTTPS加密搜索服务。直到上周，百度表示全站开启了HTTPS安全加密搜索，而其中的核心算法就是RSA。它是计算机通信安全的基石，保证了加密数据不会被破解。</p>
 <p><img alt="" src="http://image.beekka.com/blog/201306/bg2013062701.jpg" style="height:350px; width:350px" /></p>
 
-<p>�ٶ���2014����𣬿�ʼ�Բ��ֵ���������HTTPS������������ֱ�����ܣ��ٶȱ�ʾȫվ������HTTPS��ȫ���������������еĺ����㷨����RSA�����Ǽ����ͨ�Ű�ȫ�Ļ�ʯ����֤�˼������ݲ��ᱻ�ƽ⡣���ļ��ܽ��ܹ���Ϊ��</p>
+<p>它的加密解密过程为：</p>
 
-<p>��1���ҷ�����������Կ����Կ��˽Կ������Կ�ǹ����ģ��κ��˶����Ի�ã�˽Կ���Ǳ��ܵġ�</p>
+<p>（1）乙方生成两把密钥（公钥和私钥）。公钥是公开的，任何人都可以获得，私钥则是保密的。</p>
 
-<p>��2���׷���ȡ�ҷ��Ĺ�Կ��Ȼ����������Ϣ���ܡ�</p>
+<p>（2）甲方获取乙方的公钥，然后用它对信息加密。</p>
 
-<p>��3���ҷ��õ����ܺ����Ϣ����˽Կ���ܡ�</p>
+<p>（3）乙方得到加密后的信息，用私钥解密。</p>
 
-<h3>RSA�㷨ԭ��</h3>
+<h3>RSA算法原理</h3>
 
-<p>1.ȡ�������ʵ�������������ǵĳ˻�n��</p>
-
+<p>1.取两个互质的数并计算出他们的乘积n：</p>
+<pre><code>
 <p><strong>n=3*5=15</strong></p>
-
-<p>2.����ŷ���������&phi;(n)</p>
-
+</code></pre>
+<p>2.根据欧拉定理求出&phi;(n)</p>
+<pre><code>
 <p><strong>&phi;(n)=2*4=8</strong></p>
-
-<p>3.ȡ�����&phi;(n)���ʵ���e</p>
-
-<p>e=7</p>
-
-<p>4.�õ���Կ��n,e��</p>
-
-<p>(15,7)</p>
-
-<p>5.�õ���Կ��n��d��</p>
-
+</code></pre>
+<p>3.取任意和&phi;(n)互质的数e=7</p>
+<p>4.得到公钥（n,e）= (15,7)</p>
+<p>5.得到密钥（n，d）</p>
+<pre><code>
 <p><strong>e*d mod &phi;(n) = 1</strong></p>
+</code></pre>
+<p>得到一个密钥为（15,15）</p>
 
-<p>�õ�һ����ԿΪ��15,15��</p>
+<h3>加密算法的使用</h3>
 
+<p>假设Client要将x=3的值发送给Server，所经历的步骤为:</p>
+
+<p>1.使用公钥(15,7)加密x，并发送给Server</p>
+<pre><code>
+<p>x^7 mod 15 = 12 = m</p>
+</code></pre>
+<p>2.Server接收到密文m后，使用密钥解密</p>
+<pre><code>
+<p>m^15 mod 15 = 3</p>
+</code></pre>
+<p>最终解密的到原始值3</p>
 

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="qq472220372.GitHub.io : blog">
+
+<link rel="stylesheet" type="text/css" media="screen" href="../../../stylesheets/stylesheet.css">
+    <title>RSA加密算法</title>
+  </head>
+<body>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <h2 id="project_tagline">PHY的博客 >> <a href="http://qq472220372.github.io">首页</a> >> <a>RSA加密算法</a></h2>
+
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+
+
+　　<h3>Https中的RSA算法</h3>
+
+<p>百度自2014年底起，开始对部分地区开放了HTTPS加密搜索服务。直到上周，百度表示全站开启了HTTPS安全加密搜索，而其中的核心算法就是RSA。它是计算机通信安全的基石，保证了加密数据不会被破解。</p>
+<p><img alt="" src="http://image.beekka.com/blog/201306/bg2013062701.jpg" style="height:350px; width:350px" /></p>
+
+<p>它的加密解密过程为：</p>
+
+<p>（1）乙方生成两把密钥（公钥和私钥）。公钥是公开的，任何人都可以获得，私钥则是保密的。</p>
+
+<p>（2）甲方获取乙方的公钥，然后用它对信息加密。</p>
+
+<p>（3）乙方得到加密后的信息，用私钥解密。</p>
+
+<h3>RSA算法原理</h3>
+
+<p>1.取两个互质的数并计算出他们的乘积n：</p>
+<pre><code>
+<p><strong>n=3*5=15</strong></p>
+</code></pre>
+<p>2.根据欧拉定理求出&phi;(n)</p>
+<pre><code>
+<p><strong>&phi;(n)=2*4=8</strong></p>
+</code></pre>
+<p>3.取任意和&phi;(n)互质的数e=7</p>
+<p>4.得到公钥（n,e）= (15,7)</p>
+<p>5.得到密钥（n，d）</p>
+<pre><code>
+<p><strong>e*d mod &phi;(n) = 1</strong></p>
+</code></pre>
+<p>得到一个密钥为（15,15）</p>
+
+<h3>加密算法的使用</h3>
+
+<p>假设Client要将x=3的值发送给Server，所经历的步骤为:</p>
+
+<p>1.使用公钥(15,7)加密x，并发送给Server</p>
+<pre><code>
+<p>x^7 mod 15 = 12 = m</p>
+</code></pre>
+<p>2.Server接收到密文m后，使用密钥解密</p>
+<pre><code>
+<p>m^15 mod 15 = 3</p>
+</code></pre>
+<p>最终解密的到原始值3</p>
+
+
+
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="/2015/05/06/RSA" data-title="RSA加密算法" data-url="/2015/05/06/RSA.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"qq472220372"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+</div>
+
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p>@Published By <a href="https://github.com/qq472220372/" target="_Blank">PHY</a></p>
+      </footer>
+    </div>
+
+</body>
+</html>
